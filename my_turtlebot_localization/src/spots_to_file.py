@@ -9,16 +9,19 @@ import rospy
 class SaveSpots(object):
 
     def __init__(self):
+
         self.pose = PoseWithCovarianceStamped()
         self.detection_dict = {}
 
         self._my_service = rospy.Service(
             '/save_spot', MyServiceMessage, self.srv_callback)
+
         self.pose_sub = rospy.Subscriber(
             '/amcl_pose', PoseWithCovarianceStamped, self.sub_callback)
         while self.pose_sub.get_num_connections() < 1:
             rospy.loginfo("Waiting for subscription to /amcl_pose")
             time.sleep(0.1)
+        rospy.loginfo("Subscribed succesfull")
 
     def sub_callback(self, msg):
         self.pose = msg
@@ -35,15 +38,13 @@ class SaveSpots(object):
             rospy.loginfo("position saved")
 
         else:
-            with open("~/catkin_ws/my_turtlebot_localization/spots.txt", 'w') as file:
+            f = open("spots.txt", "w")
+            for key, value in self.detection_dict.items():
+                if value:
+                    f.write(str(key) + ':\n----------\n' + str(value) + '\n===========\n')
+            f.close()            
 
-                for key, value in self.detection_dict.items():
-                    if value:
-                        file.write(str(key) + ':\n----------\n' +
-                                   str(value) + '\n===========\n')
-
-                response.message = "Written Poses to spots.txt file"
-
+        response.message = "File saved"     
         response.navigation_successfull = True
 
         return response
