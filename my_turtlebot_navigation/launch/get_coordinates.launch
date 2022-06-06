@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="scan_topic" default="scan" />
+
+  <arg name="map_file" default="$(find my_turtlebot_mapping)/maps/map.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <node pkg="amcl" type="amcl" name="amcl">
+    <rosparam file="$(find my_turtlebot_localization)/params/amcl_params.yaml" command="load" />
+    <remap from="scan" to="$(arg scan_topic)"/>
+  </node>
+
+  <node pkg="my_turtlebot_navigation" type="get_coordinates_service_server.py" name="get_coordinates_service_server_node" output="screen" />
+
+</launch>
